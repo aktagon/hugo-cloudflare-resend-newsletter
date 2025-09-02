@@ -1,0 +1,36 @@
+{{- $siteURL := .Site.BaseURL -}}
+<div class="newsletter-signup">
+  <h3>{{ .Site.Params.newsletter.title | default "Weekly Newsletter" }}</h3>
+  <form id="newsletter-form">
+    <input type="email" id="email" placeholder="{{ .Site.Params.newsletter.placeholder | default "your@email.com" }}" required />
+    <button type="submit">{{ .Site.Params.newsletter.button | default "Subscribe" }}</button>
+  </form>
+  <div id="signup-message"></div>
+</div>
+
+<script>
+  document
+    .getElementById("newsletter-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const messageDiv = document.getElementById("signup-message");
+
+      try {
+        const response = await fetch("{{ $siteURL }}/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+
+        if (response.ok) {
+          messageDiv.innerHTML = '<p style="color: green;">✓ {{ .Site.Params.newsletter.success | default "Subscribed!" }}</p>';
+          document.getElementById("email").value = "";
+        } else {
+          throw new Error("Failed");
+        }
+      } catch (error) {
+        messageDiv.innerHTML = '<p style="color: red;">❌ {{ .Site.Params.newsletter.error | default "Try again" }}</p>';
+      }
+    });
+</script>

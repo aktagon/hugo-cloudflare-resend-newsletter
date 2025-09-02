@@ -1,0 +1,21 @@
+name = "newsletter"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "NEWSLETTER_DB"
+database_name = "newsletter_subscribers"
+# See README.md for details on how to create database and retrieve ID
+database_id = "..."
+
+
+[triggers]
+crons = ["0 9 * * MON"]
+
+[env.production.vars]
+SITE_URL = "https://aktagon.com"
+FROM_EMAIL = "newsletter@aktagon.com"
+
+[env.production.secrets]
+# Set with: wrangler secret put RESEND_API_KEY
+# Set with: wrangler secret put META_COMMENTARY
