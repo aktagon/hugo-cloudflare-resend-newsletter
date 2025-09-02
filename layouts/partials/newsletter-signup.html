@@ -1,4 +1,3 @@
-{{- $siteURL := .Site.BaseURL -}}
 <div class="newsletter-signup">
   <h3>{{ .Site.Params.newsletter.title | default "Weekly Newsletter" }}</h3>
   <form id="newsletter-form">
@@ -17,7 +16,7 @@
       const messageDiv = document.getElementById("signup-message");
 
       try {
-        const response = await fetch("{{ $siteURL }}/api/subscribe", {
+        const response = await fetch("/api/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
