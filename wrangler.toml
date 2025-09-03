@@ -1,5 +1,6 @@
 name = "newsletter-pages"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"] # npm crypto package
 
 [[d1_databases]]
 binding = "NEWSLETTER_DB"
