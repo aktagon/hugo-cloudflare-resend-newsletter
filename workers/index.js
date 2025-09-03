@@ -6,7 +6,7 @@ export default {
   async scheduled(event, env, ctx) {
     try {
       // Get RSS feed
-      const rss = await fetch(`${env.SITE_URL}/index.xml`);
+      const rss = await fetch(`${env.NEWSLETTER_SITE_URL}/index.xml`);
       const rssText = await rss.text();
 
       // Parse recent posts (last 7 days)
@@ -15,15 +15,13 @@ export default {
 
       // Get subscribers
       const subscribers = await env.NEWSLETTER_DB.prepare(
-        "SELECT email FROM subscribers WHERE active = TRUE"
+        "SELECT email, unsubscribe_token FROM subscribers WHERE active = TRUE"
       ).all();
-
-      // Generate newsletter HTML
-      const html = generateHTML(posts, env.META_COMMENTARY);
 
       // Send emails
       for (const sub of subscribers.results) {
-        await sendEmail(env, sub.email, html, posts);
+        const htmlWithUnsubscribe = await generateHTML(posts, env.NEWSLETTER_WEEKLY_COMMENTARY, sub.unsubscribe_token, env.NEWSLETTER_SITE_URL, env);
+        await sendEmail(env, sub.email, htmlWithUnsubscribe, posts);
       }
 
       console.log(`Newsletter sent to ${subscribers.results.length} subscribers`);
@@ -51,22 +49,42 @@ function parseRecentPosts(rssText) {
   return posts;
 }
 
-function generateHTML(posts, commentary) {
-  const postList = posts
-    .map(
-      (p) => `
-    <h3><a href="${p.link}">${p.title}</a></h3>
-    <p>Published: ${p.pubDate.toDateString()}</p>
-  `
-    )
-    .join("");
+async function getNewsletterTemplate(env) {
+  const response = await env.ASSETS.fetch('/newsletter.html');
+  return await response.text();
+}
 
-  return `
-    <h1>Weekly Newsletter</h1>
-    ${commentary ? `<div><h2>This Week</h2><p>${commentary}</p></div>` : ""}
-    <h2>New Posts</h2>
-    ${postList}
-  `;
+function renderTemplate(template, data) {
+  let result = template;
+  
+  // Handle conditionals with content
+  result = result.replace(/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/gs, (match, key, content) => {
+    return data[key] ? content : '';
+  });
+  
+  // Handle simple variable substitutions
+  result = result.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    return data[key] || '';
+  });
+  
+  return result;
+}
+
+async function generateHTML(posts, commentary, unsubscribeToken = null, siteUrl = 'https://signals.aktagon.com', env) {
+  const template = await getNewsletterTemplate(env);
+  const postsHtml = posts
+    .map(p => `    <h3><a href="${p.link}">${p.title}</a></h3>
+    <p>Published: ${p.pubDate.toDateString()}</p>`)
+    .join('\n');
+
+  const data = {
+    commentary,
+    posts: postsHtml,
+    unsubscribeToken,
+    siteUrl
+  };
+
+  return renderTemplate(template, data);
 }
 
 async function sendEmail(env, email, html, posts) {
@@ -77,7 +95,7 @@ async function sendEmail(env, email, html, posts) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: env.FROM_EMAIL,
+      from: env.NEWSLETTER_FROM_EMAIL,
       to: [email],
       subject: `Weekly Newsletter: ${posts.length} New Posts`,
       html: html,

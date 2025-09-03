@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -8,10 +10,12 @@ export async function onRequestPost(context) {
       return new Response("Invalid email", { status: 400 });
     }
 
+    const unsubscribeToken = randomUUID();
+
     await env.NEWSLETTER_DB.prepare(
-      "INSERT OR IGNORE INTO subscribers (email) VALUES (?)"
+      "INSERT OR REPLACE INTO subscribers (email, unsubscribe_token, active) VALUES (?, ?, TRUE)"
     )
-      .bind(email)
+      .bind(email, unsubscribeToken)
       .run();
 
     return new Response("Subscribed!", { status: 200 });

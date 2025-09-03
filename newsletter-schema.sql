@@ -3,7 +3,8 @@ CREATE TABLE subscribers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
   subscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  active BOOLEAN DEFAULT TRUE
+  active BOOLEAN DEFAULT TRUE,
+  unsubscribe_token TEXT UNIQUE
 );
 
 -- Index for better query performance

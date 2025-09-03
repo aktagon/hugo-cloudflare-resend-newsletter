@@ -1,5 +1,4 @@
 <div class="newsletter-signup">
-  <h3>{{ .Site.Params.newsletter.title | default "Weekly Newsletter" }}</h3>
   <form id="newsletter-form">
     <input type="email" id="email" placeholder="{{ .Site.Params.newsletter.placeholder | default "your@email.com" }}" required />
     <button type="submit">{{ .Site.Params.newsletter.button | default "Subscribe" }}</button>

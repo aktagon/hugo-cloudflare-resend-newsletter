@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <h1>Weekly Newsletter</h1>
+    {{#commentary}}
+    <div>
+      <h2>This Week</h2>
+      <p>{{commentary}}</p>
+    </div>
+    {{/commentary}}
+    <h2>New Posts</h2>
+    {{#posts}}
+    <h3><a href="{{link}}">{{title}}</a></h3>
+    <p>Published: {{pubDate}}</p>
+    {{/posts}}
+    {{#unsubscribeToken}}
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 12px; color: #666;">
+      <p>
+        <a href="{{siteUrl}}/api/unsubscribe?token={{unsubscribeToken}}">
+          Unsubscribe from this newsletter
+        </a>
+      </p>
+    </footer>
+    {{/unsubscribeToken}}
+  </body>
+</html>
